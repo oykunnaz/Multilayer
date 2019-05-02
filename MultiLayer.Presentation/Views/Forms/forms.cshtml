@@ -1,0 +1,63 @@
+﻿@model MultiLayer.Presentation.Models.Forms
+
+@{
+    ViewBag.Title = "Form";
+    List<MultiLayer.Presentation.Models.fields> fList = (List<MultiLayer.Presentation.Models.fields>)ViewBag.Fields;
+}
+
+<h2>Form</h2>
+
+<div>
+    <h4>Formu Doldurun</h4>
+    <hr />
+    <div class="col-md-6">
+        <dl class="dl-horizontal">
+            <dt>
+                Form Adı
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.name)
+            </dd>
+
+            <dt>
+                Açıklama
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.description)
+            </dd>
+
+            <dt>
+                Oluşturulma Tarihi
+            </dt>
+
+            <dd>
+                @Model.createdAt.ToString("dd.MM.yyyy")
+            </dd>
+
+
+        </dl>
+    </div>
+    <div class="col-md-6">
+        <dl class="dl-horizontal">
+            @foreach (var i in fList)
+            {
+                <dt>
+                    @i.name
+                </dt>
+
+                <dd>
+                    <input type="text" name="@i.name" @(i.required == true ? "required" : "") />
+
+                </dd>
+                <br />
+            }
+
+        </dl>
+    </div>
+
+</div>
+<p>
+    @Html.ActionLink("Listeye Dön", "Index")
+</p>

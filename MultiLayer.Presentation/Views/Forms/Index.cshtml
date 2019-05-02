@@ -1,0 +1,83 @@
+﻿@model IEnumerable<MultiLayer.Presentation.Models.Forms>
+
+@{
+    ViewBag.Title = "Formlar";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Form Ekle", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            Form Adı
+        </th>
+        <th>
+            Açıklama
+        </th>
+        <th>
+           Oluşturulma Zamanı
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.description)
+        </td>
+        <td>
+            @item.createdAt.ToString("dd.MM.yyyy")
+        </td>
+        <td>
+            @Html.ActionLink("Detay", "Forms", new {  id=item.id }) |
+            @Html.ActionLink("Json", "jsonRes", new { id = item.id }) |
+            <a role="button" id="getAjax" data-id="@item.id">Json Modal</a>
+        </td>
+    </tr>
+}
+
+</table>
+<div id="formModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Form</h4>
+            </div>
+            <div class="modal-body">
+                <div id="modBody"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+        $(function () {
+            $(document).on("click", "#getAjax", function () {
+                var ID = $(this).attr("data-id");
+                $.ajax({
+                    url: '/Forms/getJson/' + ID,
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data);
+                        var ht = "<p>" + JSON.stringify(data) + "</p>";
+                        $("#modBody").html(ht);
+                        $("#formModal").modal("show");
+                    }
+                });
+            });
+        });
+    </script>
+    }

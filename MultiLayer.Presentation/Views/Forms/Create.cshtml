@@ -1,0 +1,164 @@
+﻿@model MultiLayer.Presentation.Models.Forms
+@using Microsoft.AspNet.Identity;
+@{
+    ViewBag.Title = "Yeni Form";
+}
+
+<h2>Yeni Form</h2>
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>Tüm Alanları Doldurun</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.name,"Form Adı", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.name, new { htmlAttributes = new { @class = "form-control adi" } })
+                @Html.ValidationMessageFor(model => model.name, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.description,"Açıklama", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.description, new { htmlAttributes = new { @class = "form-control ack" } })
+                @Html.ValidationMessageFor(model => model.description, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group" style="display:none;">
+            @Html.LabelFor(model => model.createdAt, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.createdAt, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.createdAt, "", new { @class = "text-danger", @value=DateTime.Now })
+            </div>
+        </div>
+
+        <div class="form-group" style="display:none;">
+            @Html.LabelFor(model => model.createdBy, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.createdBy, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.createdBy, "", new { @class = "text-danger",@value=User.Identity.GetUserId() })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="hidden" name="fields" id="fields"/>
+                <input type="button" id="alanEkle" value="Alan Ekle" class="btn btn-primary" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="button" id="fakeSave" value="Oluştur" class="btn btn-success" />
+                <input type="submit" id="subm" value="Oluştur" style="display:none;" class="btn btn-success" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Listeye Dön", "Index")
+</div>
+
+
+<div id="fieldModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Form Alanları</h4>
+            </div>
+            <div class="modal-body">
+                <table id="tabx" class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Alan</th>
+                            <th scope="col">Tipi</th>
+                            <th scope="col">Gereklilik</th>
+                            <th scope="col"><a role="button" id="rowEkle">Ekle</a></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbod">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="alanEkleOK" class="btn btn-success">Ekle</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+        $(function () {
+            $(document).on("click", "#alanEkle", function () {
+                $("#fieldModal").modal("show");
+                var fie = $("#fields").val();
+            });
+
+            $(document).on("click", "#rowEkle", function () {
+                var getG = getGuid();
+                var row = '<tr id="tr-' + getG + '" data-id="' + getG + '">';
+                row += '<td><input type="text" class="form-control rowName-'+getG+'"></input></td>';
+                row += '<td><input type="text" class="form-control rowTipi-'+getG+'"></input></td>';
+                row += '<td><input type="checkbox" class="rowGereklilik-' + getG + '"></input></td>';
+                row += '<td><a class="removeRow" data-id="'+getG+'">Sil</a></td>';
+                row += '</tr>';
+
+                $("#tbod").append(row);
+            });
+
+            $(document).on("click", ".removeRow", function () {
+                var did = $(this).attr("data-id");
+                $("#tr-" + did).remove();
+            });
+
+            $(document).on("click", "#alanEkleOK", function () {
+                $("#fields").val("");
+                var eklenecek = "";
+                $('#tabx > tbody  > tr').each(function () {
+                    var id = $(this).attr("data-id");
+                    var adi = $(".rowName-" + id).val();
+                    var tipi = $(".rowTipi-" + id).val();
+                    var gereklilik = "";
+                    if ($('.rowGereklilik-' + id).prop("checked")) {
+                        gereklilik = "checked";
+                    } else {
+                        gereklilik = "";
+                    }
+
+                    var deger = id + "#" + adi +"#"+tipi+"#"+gereklilik + "€";
+                    eklenecek += deger;
+                });
+                $("#fields").val(eklenecek);
+                $("#fieldModal").modal("hide");
+            });
+
+            $(document).on("click", "#fakeSave", function () {
+                var name = $(".adi").val();
+                var ack = $(".ack").val();
+                if (name != "" && ack != "" && $("#fields").val() != "") {
+                    $("#subm").click();
+                } else {
+                    alert("Form adi, açıklaması boş olamaz ve en az 1 alan eklemelisiniz..");
+                }
+            });
+        });
+
+        function getGuid() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+    </script>
+    }
